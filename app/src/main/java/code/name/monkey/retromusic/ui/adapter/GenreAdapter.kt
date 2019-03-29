@@ -4,26 +4,18 @@ import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
-import java.util.ArrayList
-import java.util.Locale
 import androidx.recyclerview.widget.RecyclerView
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.model.Genre
 import code.name.monkey.retromusic.ui.adapter.base.MediaEntryViewHolder
 import code.name.monkey.retromusic.util.NavigationUtil
+import java.util.*
 
 /**
  * @author Hemanth S (h4h13).
  */
 
-class GenreAdapter(private val mActivity: Activity, dataSet: ArrayList<Genre>, private val mItemLayoutRes: Int) : RecyclerView.Adapter<GenreAdapter.ViewHolder>() {
-    var dataSet = ArrayList<Genre>()
-        private set
-
-    init {
-        this.dataSet = dataSet
-    }
+class GenreAdapter(private val mActivity: Activity, val dataSet: ArrayList<Genre>, private val mItemLayoutRes: Int) : RecyclerView.Adapter<GenreAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GenreAdapter.ViewHolder {
         return ViewHolder(LayoutInflater.from(mActivity).inflate(mItemLayoutRes, parent, false))
@@ -51,7 +43,7 @@ class GenreAdapter(private val mActivity: Activity, dataSet: ArrayList<Genre>, p
     }
 
     fun swapDataSet(list: ArrayList<Genre>) {
-        dataSet = list
+        dataSet.addAll(list)
         notifyDataSetChanged()
     }
 

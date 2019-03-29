@@ -11,9 +11,8 @@ import code.name.monkey.retromusic.mvp.presenter.GenrePresenter
 import code.name.monkey.retromusic.ui.adapter.GenreAdapter
 import code.name.monkey.retromusic.ui.fragments.base.AbsLibraryPagerRecyclerViewFragment
 import code.name.monkey.retromusic.util.PreferenceUtil
-import java.util.*
 
-class GenreFragment : AbsLibraryPagerRecyclerViewFragment<GenreAdapter, LinearLayoutManager>(), GenreContract.GenreView {
+class GenresFragment : AbsLibraryPagerRecyclerViewFragment<GenreAdapter, LinearLayoutManager>(), GenreContract.GenreView {
 
     private var mPresenter: GenrePresenter? = null
 
@@ -52,8 +51,7 @@ class GenreFragment : AbsLibraryPagerRecyclerViewFragment<GenreAdapter, LinearLa
     }
 
     override fun createAdapter(): GenreAdapter {
-        val dataSet = adapter!!.dataSet
-        return GenreAdapter(libraryFragment.mainActivity, dataSet, R.layout.item_list)
+        return GenreAdapter(libraryFragment.mainActivity, ArrayList(), R.layout.item_list)
     }
 
     override fun loading() {
@@ -81,9 +79,9 @@ class GenreFragment : AbsLibraryPagerRecyclerViewFragment<GenreAdapter, LinearLa
 
     companion object {
 
-        fun newInstance(): GenreFragment {
+        fun newInstance(): GenresFragment {
             val args = Bundle()
-            val fragment = GenreFragment()
+            val fragment = GenresFragment()
             fragment.arguments = args
             return fragment
         }

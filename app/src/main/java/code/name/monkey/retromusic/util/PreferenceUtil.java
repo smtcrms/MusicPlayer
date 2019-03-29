@@ -27,13 +27,19 @@ import androidx.annotation.StyleRes;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.bottomnavigation.LabelVisibilityMode;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import code.name.monkey.retromusic.App;
 import code.name.monkey.retromusic.R;
 import code.name.monkey.retromusic.helper.SortOrder;
+import code.name.monkey.retromusic.model.CategoryInfo;
 import code.name.monkey.retromusic.transform.CascadingPageTransformer;
 import code.name.monkey.retromusic.transform.DepthTransformation;
 import code.name.monkey.retromusic.transform.HingeTransformation;
@@ -79,6 +85,8 @@ public final class PreferenceUtil {
     public static final String ALBUM_COVER_STYLE = "album_cover_style_id";
     public static final String ALBUM_COVER_TRANSFORM = "album_cover_transform";
     public static final String TAB_TEXT_MODE = "tab_text_mode";
+    public static final String LIBRARY_CATEGORIES = "library_categories";
+    public static final String REMEMBER_LAST_TAB = "remember_last_tab";
     private static final String GENRE_SORT_ORDER = "genre_sort_order";
     private static final String LAST_PAGE = "last_start_page";
     private static final String LAST_MUSIC_CHOOSER = "last_music_chooser";
@@ -263,7 +271,6 @@ public final class PreferenceUtil {
         return Integer.parseInt(mPreferences.getString(DEFAULT_START_PAGE, "-1"));
     }
 
-
     public final int getLastPage() {
         return mPreferences.getInt(LAST_PAGE, R.id.action_song);
     }
@@ -273,7 +280,6 @@ public final class PreferenceUtil {
         editor.putInt(LAST_PAGE, value);
         editor.apply();
     }
-
 
     public void setLastLyricsType(int group) {
         final SharedPreferences.Editor editor = mPreferences.edit();
@@ -365,7 +371,6 @@ public final class PreferenceUtil {
     public final boolean ignoreMediaStoreArtwork() {
         return mPreferences.getBoolean(IGNORE_MEDIA_STORE_ARTWORK, false);
     }
-
 
     public int getLastSleepTimerValue() {
         return mPreferences.getInt(LAST_SLEEP_TIMER_VALUE, 30);
@@ -679,7 +684,6 @@ public final class PreferenceUtil {
         mPreferences.edit().putBoolean(CIRCULAR_ALBUM_ART, false).apply();
     }
 
-
     public String getAlbumDetailsStyle() {
         return mPreferences.getString(ALBUM_DETAIL_STYLE, "0");
     }
@@ -718,7 +722,6 @@ public final class PreferenceUtil {
     public boolean pauseOnZeroVolume() {
         return mPreferences.getBoolean(PAUSE_ON_ZERO_VOLUME, false);
     }
-
 
     public ViewPager.PageTransformer getAlbumCoverTransform() {
         int style = Integer.parseInt(Objects.requireNonNull(mPreferences.getString(ALBUM_COVER_TRANSFORM, "0")));
@@ -795,5 +798,46 @@ public final class PreferenceUtil {
 
     public boolean isClickOrSave() {
         return mPreferences.getBoolean(NOW_PLAYING_SCREEN, false);
+    }
+
+    public final boolean rememberLastTab() {
+        return mPreferences.getBoolean(REMEMBER_LAST_TAB, true);
+    }
+
+    public ArrayList<CategoryInfo> getLibraryCategoryInfos() {
+        String data = mPreferences.getString(LIBRARY_CATEGORIES, null);
+        if (data != null) {
+            Gson gson = new Gson();
+            Type collectionType = new TypeToken<ArrayList<CategoryInfo>>() {
+            }.getType();
+
+            try {
+                return gson.fromJson(data, collectionType);
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return getDefaultLibraryCategoryInfos();
+    }
+
+    public void setLibraryCategoryInfos(ArrayList<CategoryInfo> categories) {
+        Gson gson = new Gson();
+        Type collectionType = new TypeToken<ArrayList<CategoryInfo>>() {
+        }.getType();
+
+        final SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(LIBRARY_CATEGORIES, gson.toJson(categories, collectionType));
+        editor.apply();
+    }
+
+    public ArrayList<CategoryInfo> getDefaultLibraryCategoryInfos() {
+        ArrayList<CategoryInfo> defaultCategoryInfos = new ArrayList<>(5);
+        defaultCategoryInfos.add(new CategoryInfo(CategoryInfo.Category.SONGS, true));
+        defaultCategoryInfos.add(new CategoryInfo(CategoryInfo.Category.ALBUMS, true));
+        defaultCategoryInfos.add(new CategoryInfo(CategoryInfo.Category.ARTISTS, true));
+        defaultCategoryInfos.add(new CategoryInfo(CategoryInfo.Category.GENRES, true));
+        defaultCategoryInfos.add(new CategoryInfo(CategoryInfo.Category.PLAYLISTS, true));
+        return defaultCategoryInfos;
     }
 }

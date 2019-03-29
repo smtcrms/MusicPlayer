@@ -1,6 +1,7 @@
 package code.name.monkey.retromusic.ui.fragments.mainactivity;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,12 +14,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.afollestad.materialcab.MaterialCab;
-import com.google.android.material.appbar.AppBarLayout;
-
-import java.io.File;
-import java.util.Objects;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -27,9 +22,21 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager.widget.ViewPager;
+
+import com.afollestad.materialcab.MaterialCab;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.tabs.TabLayout;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.util.Objects;
+
 import code.name.monkey.appthemehelper.ThemeStore;
 import code.name.monkey.appthemehelper.common.ATHToolbarActivity;
 import code.name.monkey.appthemehelper.util.ATHUtil;
+import code.name.monkey.appthemehelper.util.TabLayoutUtil;
 import code.name.monkey.appthemehelper.util.TintHelper;
 import code.name.monkey.appthemehelper.util.ToolbarContentTintHelper;
 import code.name.monkey.retromusic.R;
@@ -37,6 +44,7 @@ import code.name.monkey.retromusic.dialogs.CreatePlaylistDialog;
 import code.name.monkey.retromusic.helper.SortOrder;
 import code.name.monkey.retromusic.interfaces.CabHolder;
 import code.name.monkey.retromusic.interfaces.MainActivityFragmentCallbacks;
+import code.name.monkey.retromusic.ui.adapter.MusicLibraryPagerAdapter;
 import code.name.monkey.retromusic.ui.fragments.base.AbsLibraryPagerRecyclerViewCustomGridSizeFragment;
 import code.name.monkey.retromusic.ui.fragments.base.AbsMainActivityFragment;
 import code.name.monkey.retromusic.util.Compressor;
@@ -49,7 +57,7 @@ import io.reactivex.schedulers.Schedulers;
 
 import static code.name.monkey.retromusic.Constants.USER_PROFILE;
 
-public class LibraryFragment extends AbsMainActivityFragment implements CabHolder, MainActivityFragmentCallbacks {
+public class LibraryFragment extends AbsMainActivityFragment implements CabHolder, MainActivityFragmentCallbacks, ViewPager.OnPageChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String TAG = "LibraryFragment";
     private static final String CURRENT_TAB_ID = "current_tab_id";
@@ -63,7 +71,11 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
     private FragmentManager fragmentManager;
     private ImageView userImage;
     private CompositeDisposable disposable;
+    private TabLayout tabs;
+    private ViewPager pager;
+    private MusicLibraryPagerAdapter pagerAdapter;
 
+    @NonNull
     public static Fragment newInstance(int tab) {
         Bundle args = new Bundle();
         args.putInt(CURRENT_TAB_ID, tab);
@@ -72,12 +84,14 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
         return fragment;
     }
 
+    @NonNull
     public static Fragment newInstance() {
         return new LibraryFragment();
     }
 
     @Override
     public void onDestroyView() {
+        PreferenceUtil.getInstance().unregisterOnSharedPreferenceChangedListener(this);
         super.onDestroyView();
         disposable.dispose();
     }
@@ -94,9 +108,39 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
         toolbar = view.findViewById(R.id.toolbar);
         userImage = view.findViewById(R.id.userImage);
         userImage.setOnClickListener(v -> showMainMenu());
-
+        tabs = view.findViewById(R.id.tabsLayout);
+        pager = view.findViewById(R.id.pager);
         loadImageFromStorage();
+        setupTabsLayout();
         return view;
+    }
+
+    private void setupTabsLayout() {
+        pagerAdapter = new MusicLibraryPagerAdapter(Objects.requireNonNull(getActivity()), getChildFragmentManager());
+        pager.setAdapter(pagerAdapter);
+        pager.setOffscreenPageLimit(pagerAdapter.getCount() - 1);
+
+        tabs.setupWithViewPager(pager);
+
+        int primaryColor = ThemeStore.Companion.primaryColor(getActivity());
+        int normalColor = ToolbarContentTintHelper.toolbarSubtitleColor(getActivity(), primaryColor);
+        int selectedColor = ToolbarContentTintHelper.toolbarTitleColor(getActivity(), primaryColor);
+        TabLayoutUtil.INSTANCE.setTabIconColors(tabs, normalColor, selectedColor);
+        tabs.setTabTextColors(normalColor, selectedColor);
+        tabs.setSelectedTabIndicatorColor(ThemeStore.Companion.accentColor(getActivity()));
+
+        updateTabVisibility();
+
+        if (PreferenceUtil.getInstance().rememberLastTab()) {
+            pager.setCurrentItem(PreferenceUtil.getInstance().getLastPage());
+        }
+        pager.addOnPageChangeListener(this);
+
+    }
+
+    private void updateTabVisibility() {
+        // hide the tab bar when only a single tab is visible
+        tabs.setVisibility(pagerAdapter.getCount() == 1 ? View.GONE : View.VISIBLE);
     }
 
     private void loadImageFromStorage() {
@@ -116,11 +160,11 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
         bannerTitle.setText(getString(name));
     }
 
-    public void addOnAppBarOffsetChangedListener(AppBarLayout.OnOffsetChangedListener onOffsetChangedListener) {
+    public void addOnAppBarOffsetChangedListener(@NonNull AppBarLayout.OnOffsetChangedListener onOffsetChangedListener) {
         appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener);
     }
 
-    public void removeOnAppBarOffsetChangedListener(AppBarLayout.OnOffsetChangedListener onOffsetChangedListener) {
+    public void removeOnAppBarOffsetChangedListener(@NonNull AppBarLayout.OnOffsetChangedListener onOffsetChangedListener) {
         appBarLayout.removeOnOffsetChangedListener(onOffsetChangedListener);
     }
 
@@ -132,6 +176,7 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        PreferenceUtil.getInstance().registerOnSharedPreferenceChangedListener(this);
         setStatusbarColorAuto(view);
         setupToolbar();
         inflateFragment();
@@ -218,7 +263,7 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
 
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NotNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_main, menu);
 
@@ -247,7 +292,7 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
         Activity activity = getActivity();
         if (activity == null) {
@@ -477,4 +522,33 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
     }
 
 
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        PreferenceUtil.getInstance().setLastPage(position);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(@NonNull SharedPreferences sharedPreferences, @NonNull String key) {
+        if (PreferenceUtil.LIBRARY_CATEGORIES.equals(key)) {
+            Fragment current = getCurrentFragment();
+            pagerAdapter.setCategoryInfos(PreferenceUtil.getInstance().getLibraryCategoryInfos());
+            pager.setOffscreenPageLimit(pagerAdapter.getCount() - 1);
+            int position = pagerAdapter.getItemPosition(current);
+            if (position < 0) position = 0;
+            pager.setCurrentItem(position);
+            PreferenceUtil.getInstance().setLastPage(position);
+
+            updateTabVisibility();
+        }
+    }
 }

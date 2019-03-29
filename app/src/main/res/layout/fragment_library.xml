@@ -68,6 +68,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </FrameLayout>
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabsLayout"
+                style="@style/TabLayoutStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:tabContentStart="72dp"
+                app:tabMode="scrollable" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <FrameLayout
@@ -76,7 +84,13 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@color/md_white_1000"
+            android:visibility="gone"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </LinearLayout>

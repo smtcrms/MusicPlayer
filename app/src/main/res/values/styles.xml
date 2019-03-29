@@ -107,13 +107,13 @@
 
     <style name="Fab" parent="FabParent" />
 
-    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+    <style name="TabTextAppearance" parent="@style/TextAppearance.Design.Tab">
         <item name="android:textAllCaps">false</item>
         <item name="textAllCaps">false</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TabLayoutStyle" parent="Base.Widget.Design.TabLayout">
+    <style name="TabLayoutStyle" parent="@style/Base.Widget.Design.TabLayout">
         <item name="tabIndicator">@drawable/tab_indicator</item>
         <item name="tabIndicatorFullWidth">false</item>
         <item name="tabMode">fixed</item>
