@@ -11,10 +11,11 @@ import android.view.*
 import android.view.animation.DecelerateInterpolator
 import code.name.monkey.appthemehelper.ThemeStore
 import code.name.monkey.retromusic.R
+import code.name.monkey.retromusic.extensions.doOnApplyWindowInsets
+import code.name.monkey.retromusic.fragments.base.AbsMusicServiceFragment
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.helper.MusicProgressViewUpdateHelper
 import code.name.monkey.retromusic.helper.PlayPauseButtonOnClickHandler
-import code.name.monkey.retromusic.fragments.base.AbsMusicServiceFragment
 import code.name.monkey.retromusic.util.NavigationUtil
 import code.name.monkey.retromusic.util.PreferenceUtil
 import code.name.monkey.retromusic.util.RetroUtil
@@ -44,6 +45,11 @@ open class MiniPlayerFragment : AbsMusicServiceFragment(), MusicProgressViewUpda
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.doOnApplyWindowInsets { layout, windowInsets, initialPadding ->
+            val params = layout.layoutParams as ViewGroup.MarginLayoutParams
+            params.rightMargin = windowInsets.systemWindowInsetRight
+            params.leftMargin = windowInsets.systemWindowInsetLeft
+        }
         view.setBackgroundColor(ThemeStore.primaryColor(context!!))
         view.setOnTouchListener(FlingPlayBackController(context!!))
         //view.setOnClickListener(v -> NavigationUtil.gotoNowPlayingActivity(getContext()));

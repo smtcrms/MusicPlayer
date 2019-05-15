@@ -1,7 +1,6 @@
 package code.name.monkey.retromusic.fragments.mainactivity;
 
 import android.app.Activity;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -40,6 +40,7 @@ import code.name.monkey.appthemehelper.util.TintHelper;
 import code.name.monkey.appthemehelper.util.ToolbarContentTintHelper;
 import code.name.monkey.retromusic.R;
 import code.name.monkey.retromusic.dialogs.CreatePlaylistDialog;
+import code.name.monkey.retromusic.extensions.WindowInsetExKt;
 import code.name.monkey.retromusic.fragments.base.AbsLibraryPagerRecyclerViewCustomGridSizeFragment;
 import code.name.monkey.retromusic.fragments.base.AbsMainActivityFragment;
 import code.name.monkey.retromusic.glide.GlideApp;
@@ -62,7 +63,7 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
     private Toolbar toolbar;
     private AppBarLayout appBarLayout;
     private View contentContainer;
-
+    private CoordinatorLayout coordinatorLayout;
     private MaterialCab cab;
     private FragmentManager fragmentManager;
     private ImageView userImage;
@@ -95,6 +96,7 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library, container, false);
         disposable = new CompositeDisposable();
+        coordinatorLayout = view.findViewById(R.id.coordinator_layout);
         contentContainer = view.findViewById(R.id.fragmentContainer);
         bannerTitle = view.findViewById(R.id.bannerTitle);
         appBarLayout = view.findViewById(R.id.appBarLayout);
@@ -103,9 +105,17 @@ public class LibraryFragment extends AbsMainActivityFragment implements CabHolde
         userImage.setOnClickListener(v -> showMainMenu());
 
         loadImageFromStorage();
+
+
+        WindowInsetExKt.doOnApplyWindowInsets(appBarLayout, (appbar, windowInsets, initialPadding) -> {
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) appbar.getLayoutParams();
+            params.topMargin = windowInsets.getSystemWindowInsetTop();
+            appbar.setLayoutParams(params);
+            return null;
+        });
+
         return view;
     }
-
 
 
     private void loadImageFromStorage() {

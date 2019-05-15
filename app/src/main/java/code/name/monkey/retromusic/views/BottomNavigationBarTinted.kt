@@ -28,6 +28,7 @@ class BottomNavigationBarTinted @JvmOverloads constructor(context: Context, attr
         BottomNavigationView(context, attrs, defStyleAttr) {
 
     init {
+
         labelVisibilityMode = PreferenceUtil.getInstance().tabTitleMode
         setBackgroundColor(ThemeStore.primaryColor(context))
         selectedItemId = PreferenceUtil.getInstance().lastPage
