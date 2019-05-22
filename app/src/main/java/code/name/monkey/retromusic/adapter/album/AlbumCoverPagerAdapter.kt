@@ -6,19 +6,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.activities.LyricsActivity
-import code.name.monkey.retromusic.fragments.AlbumCoverStyle
+import code.name.monkey.retromusic.fragments.AlbumCoverStyle.*
 import code.name.monkey.retromusic.fragments.NowPlayingScreen
 import code.name.monkey.retromusic.glide.GlideApp
 import code.name.monkey.retromusic.glide.RetroGlideExtension
 import code.name.monkey.retromusic.glide.RetroMusicColoredTarget
+import code.name.monkey.retromusic.glide.palette.BitmapPaletteWrapper
 import code.name.monkey.retromusic.misc.CustomFragmentStatePagerAdapter
 import code.name.monkey.retromusic.model.Song
 import code.name.monkey.retromusic.util.PreferenceUtil
+import com.bumptech.glide.request.transition.Transition
+import io.github.armcha.coloredshadow.ShadowImageView
 import java.util.*
 
 
@@ -62,7 +65,7 @@ class AlbumCoverPagerAdapter(fm: FragmentManager, private val dataSet: ArrayList
 
     class AlbumCoverFragment : Fragment() {
 
-        lateinit var albumCover: ImageView
+        lateinit var albumCover: AppCompatImageView
         private var isColorReady: Boolean = false
         private var color: Int = 0
         private lateinit var song: Song
@@ -72,13 +75,14 @@ class AlbumCoverPagerAdapter(fm: FragmentManager, private val dataSet: ArrayList
         private val layout: Int
             get() {
                 return when (PreferenceUtil.getInstance().albumCoverStyle) {
-                    AlbumCoverStyle.NORMAL -> R.layout.fragment_album_cover
-                    AlbumCoverStyle.FLAT -> R.layout.fragment_album_flat_cover
-                    AlbumCoverStyle.CIRCLE -> R.layout.fragment_album_circle_cover
-                    AlbumCoverStyle.CARD -> R.layout.fragment_album_card_cover
-                    AlbumCoverStyle.MATERIAL -> R.layout.fragment_album_material_cover
-                    AlbumCoverStyle.FULL -> R.layout.fragment_album_full_cover
-                    AlbumCoverStyle.FULL_CARD -> R.layout.fragment_album_full_card_cover
+                    NORMAL -> R.layout.fragment_album_cover
+                    FLAT -> R.layout.fragment_album_flat_cover
+                    CIRCLE -> R.layout.fragment_album_circle_cover
+                    CARD -> R.layout.fragment_album_card_cover
+                    MATERIAL -> R.layout.fragment_album_material_cover
+                    FULL -> R.layout.fragment_album_full_cover
+                    FULL_CARD -> R.layout.fragment_album_full_card_cover
+                    BLUR -> R.layout.fragment_blur_album_cover
                     else -> R.layout.fragment_album_cover
                 }
             }
@@ -113,22 +117,57 @@ class AlbumCoverPagerAdapter(fm: FragmentManager, private val dataSet: ArrayList
         }
 
         private fun loadAlbumCover() {
-            GlideApp.with(context!!)
-                    .asBitmapPalette()
-                    .load(RetroGlideExtension.getSongModel(song!!))
-                    .transition(RetroGlideExtension.getDefaultTransition())
-                    .songOptions(song)
-                    .dontAnimate()
-                    .into(object : RetroMusicColoredTarget(albumCover) {
-                        override fun onColorReady(color: Int) {
-                            setColor(color)
-                        }
+            if (PreferenceUtil.getInstance().albumCoverStyle == BLUR) {
+                GlideApp.with(context!!)
+                        .asBitmapPalette()
+                        .load(RetroGlideExtension.getSongModel(song))
+                        .transition(RetroGlideExtension.getDefaultTransition())
+                        .songOptions(song)
+                        .dontAnimate()
+                        .into(object : RetroMusicColoredTarget(albumCover) {
+                            override fun onResourceReady(resource: BitmapPaletteWrapper, glideAnimation: Transition<in BitmapPaletteWrapper>?) {
+                                super.onResourceReady(resource, glideAnimation)
+                                (albumCover as ShadowImageView).setImageBitmap(resource.bitmap)
+                            }
 
-                        override fun onLoadFailed(errorDrawable: Drawable?) {
-                            super.onLoadFailed(errorDrawable)
-                            setColor(defaultFooterColor)
-                        }
-                    })
+                            override fun onLoadStarted(placeholder: Drawable?) {
+                                super.onLoadStarted(placeholder)
+                                (albumCover as ShadowImageView).setImageDrawable(placeholder, withShadow = false)
+                            }
+
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                                super.onLoadCleared(placeholder)
+                                (albumCover as ShadowImageView).setImageDrawable(placeholder, withShadow = false)
+                            }
+
+                            override fun onColorReady(color: Int) {
+                                setColor(color)
+                            }
+
+                            override fun onLoadFailed(errorDrawable: Drawable?) {
+                                super.onLoadFailed(errorDrawable)
+                                setColor(defaultFooterColor)
+                                (albumCover as ShadowImageView).setImageDrawable(errorDrawable, withShadow = false)
+                            }
+                        })
+            } else {
+                GlideApp.with(context!!)
+                        .asBitmapPalette()
+                        .load(RetroGlideExtension.getSongModel(song))
+                        .transition(RetroGlideExtension.getDefaultTransition())
+                        .songOptions(song)
+                        .dontAnimate()
+                        .into(object : RetroMusicColoredTarget(albumCover) {
+                            override fun onColorReady(color: Int) {
+                                setColor(color)
+                            }
+
+                            override fun onLoadFailed(errorDrawable: Drawable?) {
+                                super.onLoadFailed(errorDrawable)
+                                setColor(defaultFooterColor)
+                            }
+                        })
+            }
         }
 
         private fun setColor(color: Int) {

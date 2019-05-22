@@ -46,6 +46,8 @@ import code.name.monkey.retromusic.transform.NormalPageTransformer;
 import code.name.monkey.retromusic.transform.VerticalFlipTransformation;
 import code.name.monkey.retromusic.transform.VerticalStackTransformer;
 
+import static androidx.viewpager.widget.ViewPager.*;
+
 public final class PreferenceUtil {
 
     public static final String KEEP_SCREEN_ON = "keep_screen_on";
@@ -333,6 +335,7 @@ public final class PreferenceUtil {
         editor.apply();
     }
 
+    @NonNull
     public final AlbumCoverStyle getAlbumCoverStyle() {
         int id = mPreferences.getInt(ALBUM_COVER_STYLE, 0);
         for (AlbumCoverStyle albumCoverStyle : AlbumCoverStyle.values()) {
@@ -343,7 +346,7 @@ public final class PreferenceUtil {
         return AlbumCoverStyle.CARD;
     }
 
-    public void setAlbumCoverStyle(AlbumCoverStyle albumCoverStyle) {
+    public void setAlbumCoverStyle(@NonNull AlbumCoverStyle albumCoverStyle) {
         final SharedPreferences.Editor editor = mPreferences.edit();
         editor.putInt(ALBUM_COVER_STYLE, albumCoverStyle.getId());
         editor.apply();
@@ -730,7 +733,8 @@ public final class PreferenceUtil {
     }
 
 
-    public ViewPager.PageTransformer getAlbumCoverTransform() {
+    @NonNull
+    public PageTransformer getAlbumCoverTransform() {
         int style = Integer.parseInt(Objects.requireNonNull(mPreferences.getString(ALBUM_COVER_TRANSFORM, "0")));
         switch (style) {
             default:

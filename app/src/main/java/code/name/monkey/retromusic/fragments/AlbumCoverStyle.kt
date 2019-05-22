@@ -15,5 +15,6 @@ enum class AlbumCoverStyle(@param:StringRes @field:StringRes
     MATERIAL(R.string.material, R.drawable.np_material, 3),
     CARD(R.string.card, R.drawable.np_blur_card, 4),
     FULL(R.string.full, R.drawable.np_full, 5),
-    FULL_CARD(R.string.full_card, R.drawable.np_adaptive, 6)
+    FULL_CARD(R.string.full_card, R.drawable.np_adaptive, 6),
+    BLUR(R.string.blur, R.drawable.np_adaptive, 7)
 }
