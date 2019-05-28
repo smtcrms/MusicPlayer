@@ -520,12 +520,12 @@ public final class PreferenceUtil {
         mPreferences.edit().putBoolean(INTRO_SHOWN, true).commit();
     }
 
+    @NonNull
     public final File getStartDirectory() {
-        return new File(mPreferences
-                .getString(START_DIRECTORY, FoldersFragment.getDefaultStartDirectory().getPath()));
+        return new File(mPreferences.getString(START_DIRECTORY, FoldersFragment.getDefaultStartDirectory().getPath()));
     }
 
-    public void setStartDirectory(File file) {
+    public void setStartDirectory(@NonNull File file) {
         final SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString(START_DIRECTORY, FileUtil.safeGetCanonicalPath(file));
         editor.apply();

@@ -251,14 +251,10 @@ public class FoldersFragment extends AbsMainActivityFragment implements
         TintHelper.setTintAuto(container, primaryColor, true);
         appBarLayout.setBackgroundColor(primaryColor);
         toolbar.setBackgroundColor(primaryColor);
-        toolbar.setNavigationOnClickListener(v -> {
-            getActivity().onBackPressed();
-        });
 
         breadCrumbs.setActivatedContentColor(ToolbarContentTintHelper.toolbarTitleColor(getActivity(), ColorUtil.INSTANCE.darkenColor(primaryColor)));
         breadCrumbs.setDeactivatedContentColor(ToolbarContentTintHelper.toolbarSubtitleColor(getActivity(),
                 ColorUtil.INSTANCE.darkenColor(primaryColor)));
-        appBarLayout.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> getMainActivity().setLightStatusbar(!ATHUtil.INSTANCE.isWindowBackgroundDark(getContext())));
     }
 
     private void setUpBreadCrumbs() {
@@ -483,6 +479,7 @@ public class FoldersFragment extends AbsMainActivityFragment implements
 
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        getMainActivity().setLightStatusbar(!ATHUtil.INSTANCE.isWindowBackgroundDark(getContext()));
         container.setPadding(container.getPaddingLeft(), container.getPaddingTop(),
                 container.getPaddingRight(), this.appBarLayout.getTotalScrollRange() + verticalOffset);
     }

@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import code.name.monkey.retromusic.R
 import code.name.monkey.retromusic.activities.base.AbsSlidingMusicPanelActivity
 import code.name.monkey.retromusic.fragments.mainactivity.LibraryFragment
-import code.name.monkey.retromusic.fragments.mainactivity.folders.FoldersFragment
+import code.name.monkey.retromusic.fragments.mainactivity.folders.CoroutineFolderFragment
 import code.name.monkey.retromusic.fragments.mainactivity.home.BannerHomeFragment
 import code.name.monkey.retromusic.helper.MusicPlayerRemote
 import code.name.monkey.retromusic.helper.SearchQueryHelper
@@ -278,7 +278,7 @@ class MainActivity : AbsSlidingMusicPanelActivity(), SharedPreferences.OnSharedP
             R.id.action_playlist,
             R.id.action_song -> setCurrentFragment(LibraryFragment.newInstance(itemId), false)
             R.id.action_home -> setCurrentFragment(BannerHomeFragment.newInstance(), false)
-            R.id.action_folder -> setCurrentFragment(FoldersFragment.newInstance(this), false)
+            R.id.action_folder -> setCurrentFragment(CoroutineFolderFragment.newInstance(this), false)
             else -> {
                 setCurrentFragment(BannerHomeFragment.newInstance(), false)
             }
